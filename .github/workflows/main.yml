@@ -1,0 +1,40 @@
+name: Ruby
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    continue-on-error: true
+
+    strategy:
+      matrix:
+        ruby: ['2.6', '3.1', 'jruby-9.3.9.0', 'jruby-9.4.0.0', 'truffleruby-22.3.0', 'truffleruby-head']
+        operating-system: [ubuntu-latest, windows-latest]
+
+    name: Ruby ${{ matrix.ruby }} on ${{ matrix.operating-system }}
+    runs-on: ${{ matrix.operating-system }}
+
+    env:
+      JAVA_OPTS: -Djdk.io.File.enableADS=true
+      JRUBY_OPTS: --debug -Xnative.verbose=true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Initialize Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Run tests
+        run: bundle exec rspec --format documentation spec/test_spec.rb
