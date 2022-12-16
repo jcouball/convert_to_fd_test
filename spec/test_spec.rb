@@ -17,8 +17,6 @@ class WrappedIO
   end
 end
 
-RSpec::Matchers.define_negated_matcher :not_raise_error, :raise_error
-
 describe 'Process#spawn' do
   context 'when called with out: set to an instance of WrappedIO' do
     it 'should not raise an error' do
