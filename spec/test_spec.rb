@@ -39,7 +39,7 @@ describe 'Process#spawn' do
         Dir.chdir(dir) do
           f = File.open('out.txt', 'wb')
           out = WrappedIO.new(f)
-          Process.wait(Process.spawn('echo "Hello World"', out: out))
+          Process.wait(Process.spawn('echo', 'Hello World', out: out))
           f.close
 
           expect(File.read('out.txt')).to eq("Hello World\n")
