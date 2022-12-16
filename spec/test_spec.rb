@@ -1,4 +1,5 @@
 require 'English'
+require 'tmpdir'
 
 class WrappedIO
   def initialize(io_writer)
@@ -16,14 +17,34 @@ class WrappedIO
   end
 end
 
+RSpec::Matchers.define_negated_matcher :not_raise_error, :raise_error
+
 describe 'Process#spawn' do
-  subject {  }
   context 'when called with out: set to an instance of WrappedIO' do
-    let(:out) { WrappedIO.new($stdout) }
-    it 'should call to_io to get the wrapped IO object' do
-      pid = Process.spawn('exit 0', out: out)
-      _pid, status = Process.wait2(pid)
+    it 'should not raise an error' do
+      out = WrappedIO.new(STDOUT)
+      expect do
+        Process.wait(Process.spawn('exit 0', out: out))
+      end.not_to raise_error
+    end
+
+    it 'should call #to_io to get the wrapped IO object' do
+      out = WrappedIO.new(STDOUT)
+      Process.wait(Process.spawn('exit 0', out: out))
       expect(out.to_io_called?).to eq(true)
+    end
+
+    it 'should redirect stdout of the subprocess to the wrapped IO object' do
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          f = File.open('out.txt', 'wb')
+          out = WrappedIO.new(f)
+          Process.wait(Process.spawn('echo "Hello World"', out: out))
+          f.close
+
+          expect(File.read('out.txt')).to eq("Hello World\n")
+        end
+      end
     end
   end
 end
