@@ -42,7 +42,7 @@ describe 'Process#spawn' do
           Process.wait(Process.spawn('echo', 'Hello World', out: out))
           f.close
 
-          expect(File.read('out.txt')).to eq("Hello World\n")
+          expect(File.read('out.txt')).to match(/Hello World/)
         end
       end
     end
